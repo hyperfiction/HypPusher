@@ -190,6 +190,7 @@ class HypPusher {
 					}
 				}
 				_connect_timer.addEventListener( TimerEvent.TIMER, _onConnectTimer );
+				_connect_timer.reset( );
 				_connect_timer.start( );
 				#if ios
 					hyp_subscribe( channel_name );
