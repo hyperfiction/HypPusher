@@ -26,8 +26,8 @@ import org.shoebox.utils.system.Signal3;
 *
 * 	In order to use private channel, you need to provide an end point url to authenticate
 *
-* 	Limitations : only one channel at a time for now, no presence channel
-* 	TODO : better handling of connection / reconnection
+*	Limitations : only one channel at a time for now, no presence
+*	TODO : better handling of connection / reconnectionchannel
 *
 * @author louisbl
 */
