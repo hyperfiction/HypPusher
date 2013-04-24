@@ -13,6 +13,7 @@
 
 extern "C" {
 	void hyppusher_on_connect( const char *socketId );
+	void hyppusher_on_connect_error( const char *error );
 	void hyppusher_on_subscribed( const char *channel );
 	void hyppusher_on_subscribe_error( const char *channel, const char *error );
 	void hyppusher_on_disconnect( );
@@ -40,12 +41,14 @@ extern "C" {
 
 @implementation HypPusherDelegate
 
-	@synthesize pusher = _pusher;
+	@synthesize pusher 	= _pusher;
+	@synthesize token  	= _token;
+	@synthesize user_id	= _user_id;
 
 
 	- (void)dealloc {
-		// [[NSNotificationCenter defaultCenter]
-		//	removeObserver:self name:PTPusherEventReceivedNotification object:self.pusher];
+		[[NSNotificationCenter defaultCenter]
+			removeObserver:self name:PTPusherEventReceivedNotification object:self.pusher];
 		[super dealloc];
 	}
 
@@ -60,16 +63,16 @@ extern "C" {
 	#pragma mark - Client creation
 
 	- (PTPusher *)createInstance:(NSString*)apiKey {
-		PTPusher *client     	= [PTPusher pusherWithKey:apiKey connectAutomatically:NO encrypted:kUSE_ENCRYPTED_CHANNELS];
-		client.reconnectDelay	= 5;
-		client.delegate      	= self;
+	    PTPusher *client             	= [PTPusher pusherWithKey:apiKey connectAutomatically:NO encrypted:kUSE_ENCRYPTED_CHANNELS];
+	    client.reconnectAutomatically	= NO;
+	    client.delegate              	= self;
 
-		// [[NSNotificationCenter defaultCenter]
-		//	addObserver:self
-		//	selector:@selector(didReceiveEventNotification:)
-		//	name:PTPusherEventReceivedNotification
-		//	object:client
-		// ];
+		[[NSNotificationCenter defaultCenter]
+			addObserver:self
+			selector:@selector(didReceiveEventNotification:)
+			name:PTPusherEventReceivedNotification
+			object:client
+		];
 
 		return client;
 	}
@@ -78,9 +81,14 @@ extern "C" {
 		PTPusherEvent *event = [note.userInfo objectForKey:PTPusherEventUserInfoKey];
 		@try{
 			NSString *data = [[[PTJSON JSONParser] JSONStringFromObject:event.data] copy];
-			NSLog (@"json data: %@",data);
-			hyppusher_on_message( [event.name UTF8String], [data UTF8String], [event.channel UTF8String] );
-			[data release];
+			NSString *channel;
+			NSLog (@"event: %@, with data: %@, on channel: %@",event.name,data,event.channel);
+			if( event.channel != nil ) {
+				channel = event.channel;
+			} else {
+				channel = @"pusher-internal";
+			}
+			hyppusher_on_message( [event.name UTF8String], [data UTF8String], [channel UTF8String] );
 		} @catch( NSException* e ) {
 			NSLog (@"invalid json data in message...");
 		}
@@ -90,20 +98,18 @@ extern "C" {
 	#pragma mark - PTPusherDelegate methods
 
 	- (void)pusher:(PTPusher *)pusher connectionDidConnect:(PTPusherConnection *)connection {
-	    pusher.reconnectAutomatically = YES;
-
 		NSLog(@"[pusher-%@] Pusher client connected", connection.socketID);
-
 		hyppusher_on_connect( [connection.socketID UTF8String] );
 	}
 
 	- (void)pusher:(PTPusher *)pusher connection:(PTPusherConnection *)connection didDisconnectWithError:(NSError *)error {
-		NSLog(@"[pusher-%@] Pusher Connection failed, error: %@", pusher.connection.socketID, error);
+		NSLog(@"[pusher-%@] Pusher Connection disconnected, error: %@", pusher.connection.socketID, error);
 		hyppusher_on_disconnect( );
 	}
 
 	- (void)pusher:(PTPusher *)pusher connection:(PTPusherConnection *)connection failedWithError:(NSError *)error {
 		NSLog(@"[pusher-%@] Pusher Connection failed, error: %@", pusher.connection.socketID, error);
+		hyppusher_on_connect_error( [[error localizedDescription]UTF8String] );
 	}
 
 	- (void)pusher:(PTPusher *)pusher connectionWillReconnect:(PTPusherConnection *)connection afterDelay:(NSTimeInterval)delay {
@@ -129,13 +135,14 @@ extern "C" {
 
 	- (void)pusher:(PTPusher *)pusher willAuthorizeChannelWithRequest:(NSMutableURLRequest *)request {
 		NSLog(@"[pusher-%@] Authorizing channel access...", pusher.connection.socketID);
+		NSLog(@"token: %@, user_id: %@",self.token,self.user_id);
 
 		NSMutableData *data = (NSMutableData *)[request HTTPBody];
-		if( _token != (NSString *)[NSNull null] ){
-			[data appendData:[_token dataUsingEncoding:NSUTF8StringEncoding]];
+		if( self.token != nil ){
+			[data appendData:[self.token dataUsingEncoding:NSUTF8StringEncoding]];
 		}
-		if( _user_id != (NSString *)[NSNull null] ) {
-			[data appendData:[_user_id dataUsingEncoding:NSUTF8StringEncoding]];
+		if( self.user_id != nil ) {
+			[data appendData:[self.user_id dataUsingEncoding:NSUTF8StringEncoding]];
 		}
 		[request setHTTPBody:data];
 	}
@@ -162,7 +169,6 @@ namespace hyppusher {
 		NSString *s               	= [NSString stringWithUTF8String:url];
 		NSURL *ns                 	= [[NSURL alloc] initWithString:s];
 		hp.pusher.authorizationURL	= ns;
-		[ns release];
 	}
 
 	void unbindEvent( const char *event, const char *channel_name ) {
@@ -181,8 +187,8 @@ namespace hyppusher {
 		PTPusherEventBinding *evtBind = [channel bindToEventNamed:eventString handleWithBlock:^(PTPusherEvent *event) {
 			@try{
 				NSString *data = [[[PTJSON JSONParser] JSONStringFromObject:event.data] copy];
+				NSLog (@"event: %@ with data: %@ on channel: %@",event.name,data,channel);
 				hyppusher_on_channel_message( [event.name UTF8String], [data UTF8String], [event.channel UTF8String] );
-				[data release];
 			} @catch( NSException* e ) {
 				NSLog (@"invalid json data in channel message...");
 			}

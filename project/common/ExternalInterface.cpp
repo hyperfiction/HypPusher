@@ -34,6 +34,7 @@ using namespace hyppusher;
 #endif
 
 AutoGCRoot *_on_connect        	= 0;
+AutoGCRoot *_on_connect_error  	= 0;
 AutoGCRoot *_on_disconnect     	= 0;
 AutoGCRoot *_on_message        	= 0;
 AutoGCRoot *_on_channel_message	= 0;
@@ -55,6 +56,12 @@ extern "C" {
 			const char *socketIdString = env->GetStringUTFChars(socketId, 0);
 	        val_call1( _on_connect -> get( ), alloc_string( socketIdString )  );
 			env->ReleaseStringUTFChars( socketId, socketIdString );
+	    }
+
+		JNIEXPORT void JNICALL Java_fr_hyperfiction_HypPusher_onConnectError(JNIEnv * env, jobject  obj, jstring error ) {
+			const char *errorString = env->GetStringUTFChars(error, 0);
+	        val_call1( _on_connect_error -> get( ), alloc_string( errorString )  );
+			env->ReleaseStringUTFChars( error, errorString );
 	    }
 
 	    JNIEXPORT void JNICALL Java_fr_hyperfiction_HypPusher_onDisconnect(JNIEnv * env, jobject  obj ) {
@@ -135,6 +142,10 @@ extern "C" {
 
 		void hyppusher_on_connect( const char *socketId ) {
 			val_call1( _on_connect -> get( ), alloc_string( socketId ) );
+		}
+
+		void hyppusher_on_connect_error( const char *error ) {
+			val_call1( _on_connect_error -> get( ), alloc_string( error ) );
 		}
 
 		void hyppusher_on_subscribed( const char *channel ) {
@@ -222,6 +233,12 @@ extern "C" {
 	    return alloc_bool(true);
 	}
 	DEFINE_PRIM(hyppusher_cb_connect,1);
+
+	static value hyppusher_cb_connect_error( value onCall ) {
+		_on_connect_error = new AutoGCRoot( onCall );
+	    return alloc_bool(true);
+	}
+	DEFINE_PRIM(hyppusher_cb_connect_error,1);
 
 	static value hyppusher_cb_disconnect( value onCall ) {
 		_on_disconnect = new AutoGCRoot( onCall );

@@ -35,7 +35,7 @@ import org.shoebox.utils.system.Signal3;
 class HypPusher {
 
 	public var onConnect                    	: Signal1<String>;
-	public var onConnectError               	: Signal;
+	public var onConnectError               	: Signal1<String>;
 	public var onDisconnect                 	: Signal;
 	public var onSubscribed                 	: Signal1<String>;
 	public var onSubscribeError             	: Signal2<String,String>;
@@ -71,7 +71,7 @@ class HypPusher {
 		 */
 		public function new( apiKey : String, ?authEndPoint : String, ?token : String, ?userId : String ) : Void {
 			onConnect       	= new Signal1<String>();
-			onConnectError  	= new Signal();
+			onConnectError  	= new Signal1<String>();
 			onDisconnect    	= new Signal();
 			onSubscribed    	= new Signal1<String>();
 			onSubscribeError	= new Signal2<String,String>();
@@ -87,6 +87,7 @@ class HypPusher {
 
 			#if ( android || ios )
 				hyppusher_cb_connect( _onConnect );
+				hyppusher_cb_connect_error( _onConnectError );
 				hyppusher_cb_disconnect( _onDisconnect );
 				hyppusher_cb_message( _onMessage );
 				hyppusher_cb_channel_message( _onChannelMessage );
@@ -320,7 +321,7 @@ class HypPusher {
 		function _onConnectTimer( _ ) : Void {
 			_connect_timer.removeEventListener( TimerEvent.TIMER, _onConnectTimer );
 			_connect_timer.reset( );
-			onConnectError.emit( );
+			onConnectError.emit( "connection timeout" );
 		}
 
 		function _onConnect( socketId : String ) : Void {
@@ -328,14 +329,24 @@ class HypPusher {
 			_connect_timer.reset( );
 			socket_id = socketId;
 			is_connected = true;
+			#if android
 			_subscribeOnceConnected( );
+			#end
 			onConnect.emit( socketId );
 		}
 
+		function _onConnectError( error : String ) : Void {
+			_connect_timer.removeEventListener( TimerEvent.TIMER, _onConnectTimer );
+			_connect_timer.reset( );
+			socket_id   	= null;
+			is_connected	= false;
+			onConnectError.emit( error );
+		}
+
 		function _onDisconnect( ) : Void {
-			socket_id = null;
+			socket_id   	= null;
+			is_connected	= false;
 			onDisconnect.emit();
-			is_connected = false;
 		}
 
 		function _onChannelMessage( event : String, data : String, channel_name : String ) : Void {
@@ -446,6 +457,9 @@ class HypPusher {
 
 			@CPP("hyppusher")
 			function hyppusher_cb_connect( cb : Dynamic ) : Dynamic {}
+
+			@CPP("hyppusher")
+			function hyppusher_cb_connect_error( cb : Dynamic ) : Dynamic {}
 
 			@CPP("hyppusher")
 			function hyppusher_cb_disconnect( cb : Dynamic ) : Dynamic {}
