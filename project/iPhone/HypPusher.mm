@@ -49,7 +49,6 @@ extern "C" {
 	- (void)dealloc {
 		[[NSNotificationCenter defaultCenter]
 			removeObserver:self name:PTPusherEventReceivedNotification object:self.pusher];
-		[super dealloc];
 	}
 
 	#pragma mark - Event notifications
