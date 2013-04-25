@@ -144,12 +144,15 @@ class HypPusher {
 			_connect_timer.removeEventListener( TimerEvent.TIMER, _onConnectTimer );
 			_connect_timer.reset( );
 			#if android
-				disconnect( _instance );
 				_pusher_auth.reset( );
+				disconnect( _instance );
 			#end
 			#if ios
 				hyppusher_disconnect( );
 			#end
+		}
+
+		public function reset( ) : Void {
 			_channels = new Hash<Bool>( );
 		}
 
@@ -319,6 +322,7 @@ class HypPusher {
 		}
 
 		function _onConnectTimer( _ ) : Void {
+			_connecting	= false;
 			_connect_timer.removeEventListener( TimerEvent.TIMER, _onConnectTimer );
 			_connect_timer.reset( );
 			onConnectError.emit( "connection timeout" );
@@ -327,8 +331,9 @@ class HypPusher {
 		function _onConnect( socketId : String ) : Void {
 			_connect_timer.removeEventListener( TimerEvent.TIMER, _onConnectTimer );
 			_connect_timer.reset( );
-			socket_id = socketId;
-			is_connected = true;
+			socket_id   	= socketId;
+			is_connected	= true;
+			_connecting 	= false;
 			#if android
 			_subscribeOnceConnected( );
 			#end
@@ -340,12 +345,17 @@ class HypPusher {
 			_connect_timer.reset( );
 			socket_id   	= null;
 			is_connected	= false;
+			_connecting 	= false;
 			onConnectError.emit( error );
 		}
 
 		function _onDisconnect( ) : Void {
 			socket_id   	= null;
 			is_connected	= false;
+			_connecting 	= false;
+			for ( channel_name in _channels.keys( ) ) {
+				_channels.set( channel_name, false );
+			}
 			onDisconnect.emit();
 		}
 
