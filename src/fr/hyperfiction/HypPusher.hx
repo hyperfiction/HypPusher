@@ -45,6 +45,7 @@ class HypPusher {
 	public var socket_id                    	: String;
 
 	var _channels      	: Hash<Bool>;
+	var _events        	: Hash<Array<String>>;
 	var _auth_end_point	: String;
 	var _auth_token    	: String;
 	var _auth_user_id  	: String;
@@ -80,6 +81,7 @@ class HypPusher {
 			is_connected    	= false;
 			_connecting     	= false;
 			_channels       	= new Hash<Bool>( );
+			_events         	= new Hash<Array<String>>( );
 			_auth_end_point 	= authEndPoint;
 			_auth_token     	= token;
 			_auth_user_id   	= userId;
@@ -213,6 +215,12 @@ class HypPusher {
 		public function bindOnChannel( event : String, channel : String ) : Void {
 			#if android
 				if ( _channels.get( channel ) )  {
+					var evts = _events.get( channel );
+					if( evts == null ) {
+						evts = new Array<String>( );
+						_events.set( channel, evts );
+					}
+					evts.push( event );
 					bindToEvent( _instance, event, channel );
 				}
 			#end
@@ -229,6 +237,10 @@ class HypPusher {
 		 */
 		public function unbindOnChannel( event : String, channel : String ) : Void {
 			#if android
+				var evts = _events.get( channel );
+				if( evts != null ) {
+					evts.remove( event );
+				}
 				unbindEvent( _instance, event, channel );
 			#end
 			#if ios
@@ -270,10 +282,12 @@ class HypPusher {
 
 		#if android
 			function _subscribeOnceConnected( ) : Void {
+				trace( "[HypPusher] Connect to channel set...");
 				if( !is_connected ){
 					trace( "[HypPusher] Error ::: I thought I was connected. I'm not subscribing to all channels.");
 				} else {
 					for ( channel_name in _channels.keys( ) ) {
+						trace( "re/connect to: "+channel_name );
 						if( _channels.get( channel_name ) ) {
 							continue;
 						}
@@ -325,7 +339,7 @@ class HypPusher {
 			_connecting	= false;
 			_connect_timer.removeEventListener( TimerEvent.TIMER, _onConnectTimer );
 			_connect_timer.reset( );
-			onConnectError.emit( "connection timeout" );
+			onConnectError.emit( "[HypPusher] Error ::: connection timed out" );
 		}
 
 		function _onConnect( socketId : String ) : Void {
@@ -334,10 +348,10 @@ class HypPusher {
 			socket_id   	= socketId;
 			is_connected	= true;
 			_connecting 	= false;
+			onConnect.emit( socketId );
 			#if android
 			_subscribeOnceConnected( );
 			#end
-			onConnect.emit( socketId );
 		}
 
 		function _onConnectError( error : String ) : Void {
@@ -375,6 +389,15 @@ class HypPusher {
 			_connect_timer.removeEventListener( TimerEvent.TIMER, _onConnectTimer );
 			_connect_timer.reset( );
 			_channels.set( channel_name, true );
+			#if android
+				trace( "events: "+_events );
+				var events = _events.get( channel_name );
+				if( events != null ) {
+					for ( event in events ) {
+						bindToEvent( _instance, event, channel_name );
+					}
+				}
+			#end
 			onSubscribed.emit( channel_name );
 		}
 
