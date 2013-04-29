@@ -146,7 +146,6 @@ class HypPusher {
 			_connect_timer.removeEventListener( TimerEvent.TIMER, _onConnectTimer );
 			_connect_timer.reset( );
 			#if android
-				_pusher_auth.reset( );
 				disconnect( _instance );
 			#end
 			#if ios
@@ -350,6 +349,7 @@ class HypPusher {
 			_connecting 	= false;
 			onConnect.emit( socketId );
 			#if android
+			_pusher_auth.reset( );
 			_subscribeOnceConnected( );
 			#end
 		}
