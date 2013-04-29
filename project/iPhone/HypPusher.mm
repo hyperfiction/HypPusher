@@ -154,25 +154,25 @@ namespace hyppusher {
 	NSMutableDictionary *bindings;
 
 	void createClient( const char *apiKey ) {
-		NSString *s	= [NSString stringWithUTF8String:apiKey];
+		NSString *s	= [ [NSString alloc] initWithUTF8String:apiKey];
 		hp         	= [HypPusherDelegate alloc];
 		hp.pusher  	= [hp createInstance:s];
 		bindings   	= [[NSMutableDictionary alloc] init];
 	}
 
 	void setAuthEndPoint( const char *url, const char *token, const char *user_id ) {
-		hp.token	= [NSString stringWithFormat:@"&token=%s", token];
+		hp.token	= [ [NSString alloc] initWithFormat:@"&token=%s", token];
 		if( user_id != NULL ) {
-			hp.user_id	= [NSString stringWithFormat:@"&user_id=%s", user_id];
+			hp.user_id	= [ [NSString alloc] initWithFormat:@"&user_id=%s", user_id];
 		}
-		NSString *s               	= [NSString stringWithUTF8String:url];
+		NSString *s               	= [ [NSString alloc] initWithUTF8String:url];
 		NSURL *ns                 	= [[NSURL alloc] initWithString:s];
 		hp.pusher.authorizationURL	= ns;
 	}
 
 	void unbindEvent( const char *event, const char *channel_name ) {
-		NSString *eventString                	= [NSString stringWithUTF8String:event];
-		NSString *s                          	= [NSString stringWithUTF8String:channel_name];
+		NSString *eventString                	= [ [NSString alloc] initWithUTF8String:event];
+		NSString *s                          	= [ [NSString alloc] initWithUTF8String:channel_name];
 		PTPusherChannel *channel             	= [hp.pusher channelNamed:s];
 		NSMutableDictionary *channel_bindings	= [bindings objectForKey:channel];
 		[channel removeBinding:[channel_bindings objectForKey:eventString]];
@@ -180,8 +180,8 @@ namespace hyppusher {
 	}
 
 	void bindEvent( const char *event, const char *channel_name ) {
-		NSString *eventString   	= [NSString stringWithUTF8String:event];
-		NSString *s             	= [NSString stringWithUTF8String:channel_name];
+		NSString *eventString   	= [ [NSString alloc] initWithUTF8String:event];
+		NSString *s             	= [ [NSString alloc] initWithUTF8String:channel_name];
 		PTPusherChannel *channel	= [hp.pusher channelNamed:s];
 		PTPusherEventBinding *evtBind = [channel bindToEventNamed:eventString handleWithBlock:^(PTPusherEvent *event) {
 			@try{
@@ -200,9 +200,9 @@ namespace hyppusher {
 	}
 
 	void sendEvent( const char *event, const char *data, const char *channel ) {
-		NSString *eventString  	= [NSString stringWithUTF8String:event];
-		NSString *dataString   	= [NSString stringWithUTF8String:data];
-		NSString *channelString	= [NSString stringWithUTF8String:channel];
+		NSString *eventString  	= [ [NSString alloc] initWithUTF8String:event];
+		NSString *dataString   	= [ [NSString alloc] initWithUTF8String:data];
+		NSString *channelString	= [ [NSString alloc] initWithUTF8String:channel];
 
 		[hp.pusher sendEventNamed: eventString data:dataString channel:channelString];
 	}
@@ -218,13 +218,13 @@ namespace hyppusher {
 	}
 
 	void subscribe( const char *channel ) {
-		NSString *s = [NSString stringWithUTF8String:channel];
+		NSString *s = [ [NSString alloc] initWithUTF8String:channel];
 		[hp.pusher subscribeToChannelNamed:s];
 		NSLog (@"subscribe to %s ",channel);
 	}
 
 	void unsubscribe( const char *channel_name ) {
-		NSString *s             	= [NSString stringWithUTF8String:channel_name];
+		NSString *s             	= [ [NSString alloc] initWithUTF8String:channel_name];
 		PTPusherChannel *channel	= [hp.pusher channelNamed:s];
 		[bindings removeObjectForKey:channel];
 		[channel unsubscribe];
