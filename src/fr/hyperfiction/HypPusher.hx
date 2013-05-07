@@ -258,7 +258,7 @@ class HypPusher {
 		*/
 		public function send( event : String, data : Dynamic, channel_name : String ) : Void {
 			if( ! _channels.get( channel_name ) ){
-				trace( "[HypPusher] Error ::: cannot send event without subscribing to a channel");
+				trace( "[HypPusher] Error ::: cannot send " + event + " without subscribing to " + channel_name );
 				return;
 			}
 
