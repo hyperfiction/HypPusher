@@ -82,10 +82,14 @@ class HypPusher {
 			_connecting     	= false;
 			_channels       	= new Hash<Bool>( );
 			_events         	= new Hash<Array<String>>( );
-			_auth_end_point 	= authEndPoint;
-			_auth_token     	= token;
-			_auth_user_id   	= userId;
-			_connect_timer  	= new Timer( 6000, 1);
+
+			trace( "token:"+token);
+			trace("userId:"+userId);
+
+			_auth_end_point	= authEndPoint;
+			_auth_token    	= token;
+			_auth_user_id  	= userId;
+			_connect_timer 	= new Timer( 6000, 1);
 
 			#if ( android || ios )
 				hyppusher_cb_connect( _onConnect );
@@ -281,7 +285,6 @@ class HypPusher {
 
 		#if android
 			function _subscribeOnceConnected( ) : Void {
-				trace( "[HypPusher] Connect to channel set...");
 				if( !is_connected ){
 					trace( "[HypPusher] Error ::: I thought I was connected. I'm not subscribing to all channels.");
 				} else {
@@ -313,9 +316,9 @@ class HypPusher {
 						_connect_timer.reset( );
 						_connect_timer.start( );
 						if( chanIsPrivate ){
-							_pusher_auth.authenticate( socket_id, _auth_end_point, channel_name, _auth_token );
-						} else if ( chanIsPresence ) {
 							_pusher_auth.authenticate( socket_id, _auth_end_point, channel_name, _auth_token, _auth_user_id );
+						} else if ( chanIsPresence ) {
+							_pusher_auth.authenticate( socket_id, _auth_end_point, channel_name, _auth_token, _auth_user_id, true );
 						} else {
 							subscribeToPublic( _instance, channel_name );
 						}
