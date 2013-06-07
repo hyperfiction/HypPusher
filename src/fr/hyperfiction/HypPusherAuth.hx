@@ -51,12 +51,11 @@ class HypPusherAuth {
 		return _channels_auth.get( channel_name );
 	}
 
-	public function authenticate( socket_id : String, end_point : String, channel_name : String, token : String, ?userId : String ) : Void {
-		trace( " auth endpoint ::: "+end_point );
-		if( userId == null ) {
-			_is_presence = false;
-		} else {
+	public function authenticate( socket_id : String, end_point : String, channel_name : String, token : String, ?userId : String, ?presence : Bool ) : Void {
+		if( presence != null && presence ) {
 			_is_presence = true;
+		} else {
+			_is_presence = false;
 		}
 		var auth : String = getAuth( channel_name );
 		if( auth != null ){
@@ -108,7 +107,7 @@ class HypPusherAuth {
 		http.setParameter( "token", _token );
 		http.setParameter( "user_id", _user_id );
 
-		http.onData		= function( res : String ) {
+		http.onData = function( res : String ) {
 			#if cpp
 			main_thread.sendMessage( res );
 			#else
@@ -117,7 +116,7 @@ class HypPusherAuth {
 			#end
 		}
 
-		http.onError	= function( msg : String ) {
+		http.onError = function( msg : String ) {
 			#if cpp
 			main_thread.sendMessage( "error" );
 			main_thread.sendMessage( msg );

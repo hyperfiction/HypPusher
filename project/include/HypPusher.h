@@ -1,7 +1,7 @@
 #ifndef Device
 #define Device
 
-namespace hyperfiction {
+namespace hyppusher {
 
 	void createClient( const char *apiKey );
 	void connect( );
@@ -10,10 +10,8 @@ namespace hyperfiction {
 	void subscribe( const char *channel );
 	void unsubscribe( const char *channel );
 	void sendEvent( const char *event, const char *data, const char *channel );
-	void bindEvent( const char *event );
-	void unbindEvent( const char *event );
-	void bindEventOnChannel( const char *event, const char *channel );
-	void unbindEventOnChannel( const char *event, const char *channel );
+	void bindEvent( const char *event, const char *channel );
+	void unbindEvent( const char *event, const char *channel );
 }
 
 #endif
