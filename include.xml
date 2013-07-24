@@ -1,26 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project>
 
+	<haxelib name="inthebox-macros" />
 	<ndll name="hyppusher" if="mobile"/>
-	<classpath name="src" />
 
 	<!-- android -->
 	<java path="project/android" if="android"/>
 
+	<templatePath name="templates" />
+
 	<!-- ios -->
+		<!--
 		<template path="/templates/iphone/libPusher-iphonesimulator6.0.a" rename="lib/i386/libpusher.a" if="ios"/>
 		<template path="/templates/iphone/libPusher-iphonesimulator6.0.a" rename="lib/i386-debug/libpusher.a" if="ios"/>
 		<template path="/templates/iphone/libPusher-iphoneos6.0.a" rename="lib/armv7/libpusher.a" if="ios"/>
 		<template path="/templates/iphone/libPusher-iphoneos6.0.a" rename="lib/armv7-debug/libpusher.a" if="ios"/>
 
-		<!--
-	    -->
 		<template path="/templates/iphone/libJSONKit-iphonesim.a" rename="lib/i386/libJSONKit.a" if="ios"/>
 		<template path="/templates/iphone/libJSONKit-iphonesim.a" rename="lib/i386-debug/libJSONKit.a" if="ios"/>
 		<template path="/templates/iphone/libJSONKit-iphoneos.a" rename="lib/armv7/libJSONKit.a" if="ios"/>
 		<template path="/templates/iphone/libJSONKit-iphoneos.a" rename="lib/armv7-debug/libJSONKit.a" if="ios"/>
+	    -->
 
- 		<ios linker-flags="-all_load" />
+		<ios linker-flags="-all_load" />
 
  		<!--
 	    -->

@@ -1,0 +1,12 @@
+{
+  "name": "HypPusher",
+  "url": "https://github.com/hyperfiction/hyppusher",
+  "license": "BSD",
+  "tags": ["hyperfiction", "pusherr", "cpp", "cross", "openfl"],
+  "description": "An OpenFL native extension for Pusher, compatible with iOS and Android.",
+  "version": "2.0.0",
+  "releasenote": "Haxe3 and OpenFl compatibility",
+  "contributors": ["louisbl"],
+  "dependencies": {
+  }
+}

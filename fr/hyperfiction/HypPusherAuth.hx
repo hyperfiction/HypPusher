@@ -1,14 +1,14 @@
 package fr.hyperfiction;
 
-import nme.Lib;
-import nme.net.URLLoader;
-import nme.net.URLRequest;
-import nme.net.URLRequestMethod;
-import nme.net.URLVariables;
+import flash.Lib;
+import flash.net.URLLoader;
+import flash.net.URLRequest;
+import flash.net.URLRequestMethod;
+import flash.net.URLVariables;
 
-import nme.events.Event;
-import nme.events.SecurityErrorEvent;
-import nme.events.IOErrorEvent;
+import flash.events.Event;
+import flash.events.SecurityErrorEvent;
+import flash.events.IOErrorEvent;
 
 import org.shoebox.utils.system.Signal2;
 import org.shoebox.utils.system.Signal3;

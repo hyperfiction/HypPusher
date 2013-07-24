@@ -1,14 +1,14 @@
 package fr.hyperfiction;
 
 #if android
-import nme.JNI;
+import flash.JNI;
 #end
 
-import nme.Lib;
-import nme.events.TimerEvent;
-import nme.events.Event;
+import flash.Lib;
+import flash.events.TimerEvent;
+import flash.events.Event;
 
-import nme.utils.Timer;
+import flash.utils.Timer;
 import org.shoebox.utils.system.Signal;
 import org.shoebox.utils.system.Signal1;
 import org.shoebox.utils.system.Signal2;
@@ -31,7 +31,7 @@ import org.shoebox.utils.system.Signal3;
 *
 * @author louisbl
 */
-@:build( org.shoebox.utils.NativeMirror.build() )
+@:build( ShortCuts.mirrors() )
 class HypPusher {
 
 	public var onConnect                    	: Signal1<String>;
@@ -44,8 +44,8 @@ class HypPusher {
 	public var is_connected( default, null )	: Bool;
 	public var socket_id                    	: String;
 
-	var _channels      	: Hash<Bool>;
-	var _events        	: Hash<Array<String>>;
+	var _channels      	: Map<String,Bool>;
+	var _events        	: Map<String,Array<String>>;
 	var _auth_end_point	: String;
 	var _auth_token    	: String;
 	var _auth_user_id  	: String;
@@ -55,7 +55,7 @@ class HypPusher {
 	#if android
 		var _pusher_auth 	: HypPusherAuth;
 		var _instance    	: Dynamic;
-		var _all_chan_evt	: Hash<Bool>;
+		var _all_chan_evt	: Map<String,Bool>;
 	#end
 
 	// -------o constructor
@@ -80,8 +80,8 @@ class HypPusher {
 			onChannelMessage	= new Signal3<String, Dynamic, String>();
 			is_connected    	= false;
 			_connecting     	= false;
-			_channels       	= new Hash<Bool>( );
-			_events         	= new Hash<Array<String>>( );
+			_channels       	= new Map<String, Bool>( );
+			_events         	= new Map<String, Array<String>>( );
 
 			trace( "token:"+token);
 			trace("userId:"+userId);
@@ -102,7 +102,7 @@ class HypPusher {
 			#end
 			#if android
 				_instance = create( apiKey );
-				_all_chan_evt	= new Hash<Bool>( );
+				_all_chan_evt	= new Map<String,Bool>( );
 				_pusher_auth 	= new HypPusherAuth( );
 				_pusher_auth.sgAuthSuccessful.connect( _on_auth_success );
 				_pusher_auth.sgAuthFailed.connect( _onSubscribeError );
@@ -158,7 +158,7 @@ class HypPusher {
 		}
 
 		public function reset( ) : Void {
-			_channels = new Hash<Bool>( );
+			_channels = new Map<String,Bool>( );
 		}
 
 		/**
@@ -377,13 +377,13 @@ class HypPusher {
 		}
 
 		function _onChannelMessage( event : String, data : String, channel_name : String ) : Void {
-			trace( Std.format( "[HypPusher] ::: on channel message ::: $event,  data ::: $data, channel_name ::: $channel_name \n" ) );
+			trace( '[HypPusher] ::: on channel message ::: $event,  data ::: $data, channel_name ::: $channel_name \n' );
 			var dataObj : Dynamic = _parseData( data );
 			onChannelMessage.emit( event, dataObj, channel_name );
 		}
 
 		function _onMessage( event : String, data : String, channel_name : String ) : Void {
-			trace( Std.format( "[HypPusher] ::: on message ::: $event,  data ::: $data, channel_name ::: $channel_name \n" ) );
+			trace( '[HypPusher] ::: on message ::: $event,  data ::: $data, channel_name ::: $channel_name \n' );
 			var dataObj : Dynamic = _parseData( data );
 			onMessage.emit( event, dataObj, channel_name );
 		}
