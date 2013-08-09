@@ -1,9 +1,5 @@
 package fr.hyperfiction;
 
-#if android
-import flash.JNI;
-#end
-
 import flash.Lib;
 import flash.events.TimerEvent;
 import flash.events.Event;

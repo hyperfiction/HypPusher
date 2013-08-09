@@ -34,17 +34,17 @@ class HypPusherAuth {
 	var _error       	: String;
 	var _is_presence 	: Bool;
 
-	var _channels_auth	: Hash<String>;
+	var _channels_auth	: Map<String,String>;
 
 	public function new() {
 		sgAuthSuccessful	= new Signal3<String, String, Bool>();
 		sgAuthFailed    	= new Signal2<String, String>();
 		sgAuthError     	= new Signal2<String, String>();
-		_channels_auth  	= new Hash<String>( );
+		_channels_auth  	= new Map<String,String>( );
 	}
 
 	public function reset( ) : Void {
-		_channels_auth	= new Hash<String>( );
+		_channels_auth	= new Map<String,String>( );
 	}
 
 	public function getAuth( channel_name : String ) : String {
