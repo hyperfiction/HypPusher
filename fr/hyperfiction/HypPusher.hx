@@ -47,6 +47,7 @@ class HypPusher {
 	var _auth_user_id  	: String;
 	var _connect_timer 	: Timer;
 	var _connecting    	: Bool;
+	var _channel_to_set : Bool;
 
 	#if android
 		var _pusher_auth 	: HypPusherAuth;
@@ -86,6 +87,7 @@ class HypPusher {
 			_auth_token    	= token;
 			_auth_user_id  	= userId;
 			_connect_timer 	= new Timer( 6000, 1);
+			_channel_to_set = false;
 
 			#if ( android || ios )
 				hyppusher_cb_connect( _onConnect );
@@ -181,6 +183,7 @@ class HypPusher {
 			}
 			if( !is_connected && !_connecting ){
 				trace( "[HypPusher] Error ::: I need to be connected to subscribe to a channel. Let's do it.");
+				_channel_to_set = true;
 				connectToServer( );
 			} else {
 				#if android
@@ -281,9 +284,11 @@ class HypPusher {
 
 		#if android
 			function _subscribeOnceConnected( ) : Void {
+				trace( "_subscribeOnceConnected" );
 				if( !is_connected ){
 					trace( "[HypPusher] Error ::: I thought I was connected. I'm not subscribing to all channels.");
 				} else {
+					_channel_to_set = false;
 					for ( channel_name in _channels.keys( ) ) {
 						trace( "re/connect to: "+channel_name );
 						if( _channels.get( channel_name ) ) {
@@ -349,7 +354,8 @@ class HypPusher {
 			onConnect.emit( socketId );
 			#if android
 			_pusher_auth.reset( );
-			_subscribeOnceConnected( );
+			if( _channel_to_set )
+				_subscribeOnceConnected( );
 			#end
 		}
 

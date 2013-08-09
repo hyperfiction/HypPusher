@@ -102,6 +102,8 @@ class HypPusherAuth {
 
 		var http : Http = new Http( _end_point );
 
+		trace( 'socket_id=$_socket_id&channel_name=$_channel_name&token=$_token&user_id=$_user_id' );
+
 		http.setParameter( "socket_id", _socket_id );
 		http.setParameter( "channel_name", _channel_name );
 		http.setParameter( "token", _token );
